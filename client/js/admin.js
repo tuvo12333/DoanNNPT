@@ -40,7 +40,13 @@ const admin = {
                                 <td>#${u.id}</td>
                                 <td><strong>${u.username}</strong></td>
                                 <td>${u.email}</td>
-                                <td><span class="role-badge role-${u.role.name.toLowerCase()}">${u.role.name}</span></td>
+                                <td>
+                                    <select onchange="admin.updateUserRole(${u.id}, this.value)" class="role-select" style="padding: 0.3rem; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.85rem; cursor: pointer; display: inline-block;">
+                                        <option value="Admin" ${u.role.name === 'Admin' ? 'selected' : ''}>Admin</option>
+                                        <option value="Landlord" ${u.role.name === 'Landlord' ? 'selected' : ''}>Chủ Trọ</option>
+                                        <option value="Tenant" ${u.role.name === 'Tenant' ? 'selected' : ''}>Người Thuê</option>
+                                    </select>
+                                </td>
                                 <td>
                                     <button onclick="admin.deleteUser(${u.id})" class="action-btn btn-danger" title="Xóa người dùng">
                                         <i class="fas fa-trash-alt"></i>
@@ -70,6 +76,28 @@ const admin = {
             }
         } catch (err) {
             showToast('Lỗi khi xóa người dùng', 'error');
+        }
+    },
+
+    async updateUserRole(id, roleName) {
+        try {
+            const res = await fetch(`${API_URL}/users/${id}`, {
+                method: 'PUT',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${auth.getToken()}` 
+                },
+                body: JSON.stringify({ roleName })
+            });
+            if (res.ok) {
+                showToast('Cập nhật quyền thành công', 'success');
+                this.loadUsers();
+            } else {
+                const data = await res.json();
+                showToast(data.message || 'Lỗi cập nhật', 'error');
+            }
+        } catch (err) {
+            showToast('Lỗi kết nối server', 'error');
         }
     }
 };
